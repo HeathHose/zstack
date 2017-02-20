@@ -29,11 +29,12 @@ public class PrepareAnsible {
     private static ReentrantLock lock = new ReentrantLock();
 
     static {
+        logger.debug("start static");
         try {
             if (!hostsFile.exists()) {
                 hostsFile.createNewFile();
             }
-
+            logger.debug("second if before");
             if (AnsibleGlobalProperty.KEEP_HOSTS_FILE_IN_MEMORY) {
                 String ipStr = FileUtils.readFileToString(hostsFile);
                 for (String ip : ipStr.split("\n")) {
@@ -45,6 +46,7 @@ public class PrepareAnsible {
                     hostIPs.add(ip);
                 }
             }
+            logger.debug("end static");
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
@@ -103,7 +105,9 @@ public class PrepareAnsible {
         DebugUtils.Assert(targetIp  != null, "targetIp cannot be null");
 
         try {
+            logger.debug("before setupHostFile");
             setupHostsFile();
+            logger.debug("after setupHostFile");
         } catch (IOException e) {
             throw new CloudRuntimeException(e);
         }

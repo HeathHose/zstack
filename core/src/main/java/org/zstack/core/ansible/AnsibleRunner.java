@@ -1,5 +1,6 @@
 package org.zstack.core.ansible;
 
+import net.schmizz.sshj.common.SSHException;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,10 @@ import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.CloudBusCallBack;
 import org.zstack.core.defer.Defer;
 import org.zstack.core.defer.Deferred;
+import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.core.Completion;
+import org.zstack.header.errorcode.OperationFailureException;
+import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.message.MessageReply;
 import org.zstack.utils.ShellUtils;
@@ -17,6 +21,7 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.utils.network.NetworkUtils;
 import org.zstack.utils.path.PathUtil;
+import org.zstack.utils.ssh.SshException;
 import org.zstack.utils.ssh.SshResult;
 import org.zstack.utils.ssh.SshShell;
 
@@ -38,6 +43,8 @@ import static org.zstack.utils.StringDSL.ln;
 public class AnsibleRunner {
     private static final CLogger logger = Utils.getLogger(AnsibleRunner.class);
 
+    @Autowired
+    private ErrorFacade errf;
     @Autowired
     private AnsibleFacade asf;
     @Autowired
@@ -364,6 +371,8 @@ public class AnsibleRunner {
             new PrepareAnsible().setTargetIp(targetIp).prepare();
             setupPublicKey();
             callAnsible(completion);
+        } catch (SshException e) {
+            throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.SSH_ERROR, e.getMessage()));
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }

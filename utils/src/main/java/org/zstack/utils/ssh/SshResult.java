@@ -1,5 +1,8 @@
 package org.zstack.utils.ssh;
 
+import org.zstack.utils.Utils;
+import org.zstack.utils.logging.CLogger;
+
 public class SshResult {
 	private int returnCode;
 	private String stdout;
@@ -8,8 +11,11 @@ public class SshResult {
 	private String commandToExecute;
     private boolean isSshFailure;
 
+	private static final CLogger logger = Utils.getLogger(SshResult.class);
+
     public void raiseExceptionIfFailed(int retCode) {
         if (retCode != returnCode) {
+			logger.debug("throw a bug!");
             throw new SshException(toString());
         }
     }
